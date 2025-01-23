@@ -49,16 +49,3 @@ void main() {
 This is a port of the Python implementation to Dart, maintaining the same functionality and API where possible.
 
 For more examples, see the `example` directory.
-```
-
-6. Create a CHANGELOG.md:
-
-```markdown:CHANGELOG.md
-## 1.0.0
-
-* Initial release
-* Pure Dart implementation of Rijndael cipher
-* Support for block sizes: 16, 24, and 32 bytes
-* CBC mode implementation
-* PKCS7 and Zero padding implementations
-* Comprehensive test suite
