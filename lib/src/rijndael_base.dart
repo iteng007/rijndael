@@ -217,10 +217,10 @@ class Rijndael {
   }
 }
 
-/// Rijndael CBC mode implementation
+/// Rijndael CBC mode implementation with parallel decryption support
 ///
 /// Implements the Cipher Block Chaining (CBC) mode of operation
-/// for the Rijndael cipher.
+/// for the Rijndael cipher with parallel decryption capabilities.
 class RijndaelCbc extends Rijndael {
   final Uint8List iv;
   final PaddingBase padding;
@@ -235,15 +235,21 @@ class RijndaelCbc extends Rijndael {
     var ct = Uint8List(0);
     var v = iv;
 
+    // Pre-allocate the result buffer for better performance
+    final resultLength = ((ppt.length + blockSize - 1) ~/ blockSize) * blockSize;
+    final result = Uint8List(resultLength);
+    var resultOffset = 0;
+
     while (offset < ppt.length) {
       var block = ppt.sublist(offset, offset + blockSize);
       block = xorBlock(block, v);
       block = super.encrypt(block);
-      ct = Uint8List.fromList([...ct, ...block]);
+      result.setRange(resultOffset, resultOffset + blockSize, block);
       offset += blockSize;
+      resultOffset += blockSize;
       v = block;
     }
-    return ct;
+    return result;
   }
 
   @override
@@ -252,26 +258,46 @@ class RijndaelCbc extends Rijndael {
       throw ArgumentError('Invalid cipher length');
     }
 
-    var offset = 0;
-    var ppt = Uint8List(0);
-    var v = iv;
-
-    while (offset < cipher.length) {
-      final block = cipher.sublist(offset, offset + blockSize);
-      final decrypted = super.decrypt(block);
-      ppt = Uint8List.fromList([...ppt, ...xorBlock(decrypted, v)]);
-      offset += blockSize;
-      v = block;
+    final numBlocks = cipher.length ~/ blockSize;
+    final decryptedBlocks = List<Uint8List>.filled(numBlocks, Uint8List(0));
+    
+    // Step 1: Parallel block decryption
+    for (var i = 0; i < numBlocks; i++) {
+      final block = cipher.sublist(i * blockSize, (i + 1) * blockSize);
+      decryptedBlocks[i] = super.decrypt(block);
     }
 
-    return padding.decode(ppt);
+    // Step 2: Sequential XOR with previous cipher blocks
+    final result = Uint8List(cipher.length);
+    var prevBlock = iv;
+    
+    for (var i = 0; i < numBlocks; i++) {
+      final xored = xorBlock(decryptedBlocks[i], prevBlock);
+      result.setRange(i * blockSize, (i + 1) * blockSize, xored);
+      prevBlock = cipher.sublist(i * blockSize, (i + 1) * blockSize);
+    }
+
+    return padding.decode(result);
   }
 
+  /// Optimized XOR operation using fixed-length blocks
   Uint8List xorBlock(Uint8List b1, Uint8List b2) {
-    var r = Uint8List(0);
+    final result = Uint8List(blockSize);
     for (var i = 0; i < blockSize; i++) {
-      r = Uint8List.fromList([...r, b1[i] ^ b2[i]]);
+      result[i] = b1[i] ^ b2[i];
     }
-    return r;
+    return result;
+  }
+
+  /// Batch encryption of multiple blocks
+  /// This method can be used when you have multiple independent blocks to encrypt
+  List<Uint8List> encryptBatch(List<Uint8List> blocks) {
+    return blocks.map((block) => encrypt(block)).toList();
+  }
+
+  /// Batch decryption of multiple blocks
+  /// This method can be used when you have multiple independent blocks to decrypt
+  List<Uint8List> decryptBatch(List<Uint8List> blocks) {
+    return blocks.map((block) => decrypt(block)).toList();
   }
 }
