@@ -1,4 +1,4 @@
-## 1.1.0
+## 1.0.1
 
 - Enhance Rijndael CBC mode with parallel decryption support and optimized performance
 
