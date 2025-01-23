@@ -1,10 +1,3 @@
-// // TODO: Put public facing types in this file.
-
-// /// Checks if you are awesome. Spoiler: you are.
-// class Awesome {
-//   bool get isAwesome => true;
-// }
-
 import 'dart:typed_data';
 import 'constants.dart';
 import 'paddings.dart';
@@ -225,14 +218,12 @@ class RijndaelCbc extends Rijndael {
   final Uint8List iv;
   final PaddingBase padding;
 
-  RijndaelCbc(Uint8List key, this.iv, this.padding, {int blockSize = 16})
-      : super(key, blockSize: blockSize);
+  RijndaelCbc(super.key, this.iv, this.padding, {super.blockSize});
 
   @override
   Uint8List encrypt(Uint8List source) {
     final ppt = padding.encode(source);
     var offset = 0;
-    var ct = Uint8List(0);
     var v = iv;
 
     // Pre-allocate the result buffer for better performance
