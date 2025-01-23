@@ -10,6 +10,9 @@ import 'constants.dart';
 import 'paddings.dart';
 
 /// Rijndael cipher implementation
+///
+/// Implements the Rijndael cipher with support for multiple block sizes.
+/// This is the base implementation that operates on single blocks.
 class Rijndael {
   final int blockSize;
   final Uint8List key;
@@ -215,6 +218,9 @@ class Rijndael {
 }
 
 /// Rijndael CBC mode implementation
+///
+/// Implements the Cipher Block Chaining (CBC) mode of operation
+/// for the Rijndael cipher.
 class RijndaelCbc extends Rijndael {
   final Uint8List iv;
   final PaddingBase padding;

@@ -1,6 +1,8 @@
 import 'dart:typed_data';
 
 /// Base class for padding implementations
+///
+/// Provides the interface for different padding schemes.
 abstract class PaddingBase {
   /// Block size for the padding
   final int blockSize;
@@ -16,6 +18,8 @@ abstract class PaddingBase {
 }
 
 /// Zero padding implementation as specified in ISO/IEC 10118-1 and ISO/IEC 9797-1
+///
+/// Pads the input with zero bytes to reach the required block size.
 class ZeroPadding extends PaddingBase {
   /// Creates a new zero padding instance
   const ZeroPadding(super.blockSize);
@@ -50,6 +54,8 @@ class ZeroPadding extends PaddingBase {
 }
 
 /// PKCS7 padding implementation as defined in RFC 2315
+///
+/// Pads the input according to the PKCS#7 specification.
 class Pkcs7Padding extends PaddingBase {
   /// Creates a new PKCS7 padding instance
   const Pkcs7Padding(super.blockSize);
